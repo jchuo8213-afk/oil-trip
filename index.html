@@ -2,48 +2,64 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>车辆成本计算器</title>
+    <title>自定义油价报表生成器</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; background-color: #f4f4f9; }
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
         .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         label { display: block; margin-top: 10px; font-weight: bold; }
-        input { width: 100%; padding: 8px; margin: 5px 0 15px 0; box-sizing: border-box; }
-        .result { font-size: 1.2em; font-weight: bold; color: #d32f2f; }
+        input { width: 100%; padding: 8px; margin: 5px 0 10px 0; box-sizing: border-box; }
+        button { background-color: #2196F3; color: white; padding: 12px; border: none; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>成本计算器</h2>
+    <h2>报表生成工具</h2>
     
     <label>基准油价:</label>
-    <input type="number" id="basePrice" value="2.15" step="0.01" oninput="calculate()">
-
-    <label>当前油价:</label>
-    <input type="number" id="currentPrice" value="2.15" step="0.01" oninput="calculate()">
+    <input type="number" id="basePrice" value="2.15" step="0.01">
     
-    <hr>
+    <label>起始油价:</label>
+    <input type="number" id="startPrice" value="2.15" step="0.01">
+    
+    <label>结束油价:</label>
+    <input type="number" id="endPrice" value="4.45" step="0.01">
+    
+    <label>涨幅步长 (例如 0.1 或 0.01):</label>
+    <input type="number" id="stepValue" value="0.1" step="0.01">
     
     <label>小车基准费用:</label>
-    <input type="number" id="smallBase" value="250" oninput="calculate()">
-    <p>当前小车 1 Trip: <span id="smallResult" class="result">250.00</span></p>
+    <input type="number" id="smallBase" value="250">
     
     <label>大车基准费用:</label>
-    <input type="number" id="largeBase" value="500" oninput="calculate()">
-    <p>当前大车 1 Trip: <span id="largeResult" class="result">500.00</span></p>
+    <input type="number" id="largeBase" value="500">
+    
+    <button onclick="generateCSV()">下载对照表 (.csv)</button>
 </div>
 
 <script>
-    function calculate() {
-        const baseP = parseFloat(document.getElementById('basePrice').value) || 1;
-        const currentP = parseFloat(document.getElementById('currentPrice').value) || 0;
-        const smallB = parseFloat(document.getElementById('smallBase').value) || 0;
-        const largeB = parseFloat(document.getElementById('largeBase').value) || 0;
+    function generateCSV() {
+        const basePrice = parseFloat(document.getElementById('basePrice').value);
+        const startPrice = parseFloat(document.getElementById('startPrice').value);
+        const endPrice = parseFloat(document.getElementById('endPrice').value);
+        const step = parseFloat(document.getElementById('stepValue').value);
+        const smallBase = parseFloat(document.getElementById('smallBase').value);
+        const largeBase = parseFloat(document.getElementById('largeBase').value);
         
-        const ratio = currentP / baseP;
+        let csvContent = "\uFEFF油价,小车 Trip,大车 Trip\n"; // \uFEFF 解决中文乱码
         
-        document.getElementById('smallResult').innerText = (smallB * ratio).toFixed(2);
-        document.getElementById('largeResult').innerText = (largeB * ratio).toFixed(2);
+        for (let p = startPrice; p <= endPrice + 0.00001; p += step) {
+            let price = p.toFixed(2);
+            let ratio = price / basePrice;
+            csvContent += ${price},${(smallBase * ratio).toFixed(2)},${(largeBase * ratio).toFixed(2)}\n;
+        }
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "油价成本报表.csv");
+        link.click();
     }
 </script>
 
