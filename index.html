@@ -25,7 +25,7 @@
     <label>结束油价:</label>
     <input type="number" id="endPrice" value="4.45" step="0.01">
     
-    <label>涨幅步长 (例如 0.1 或 0.01):</label>
+    <label>涨幅步长:</label>
     <input type="number" id="stepValue" value="0.1" step="0.01">
     
     <label>小车基准费用:</label>
@@ -46,9 +46,9 @@
         const smallBase = parseFloat(document.getElementById('smallBase').value);
         const largeBase = parseFloat(document.getElementById('largeBase').value);
         
-        let csvContent = "\uFEFF油价,小车 Trip,大车 Trip\n"; // \uFEFF 解决中文乱码
+        let csvContent = "\uFEFF油价,小车 Trip,大车 Trip\n";
         
-        for (let p = startPrice; p <= endPrice + 0.00001; p += step) {
+        for (let p = startPrice; p <= endPrice + 0.0001; p += step) {
             let price = p.toFixed(2);
             let ratio = price / basePrice;
             csvContent += ${price},${(smallBase * ratio).toFixed(2)},${(largeBase * ratio).toFixed(2)}\n;
@@ -59,7 +59,9 @@
         const link = document.createElement("a");
         link.setAttribute("href", url);
         link.setAttribute("download", "油价成本报表.csv");
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
     }
 </script>
 
